@@ -8,6 +8,9 @@
 
 
 int gamespacex, gamespacey;//长、宽的游戏区域
+int minenum;//游戏地雷的数目
+char space[24 + 1][30 + 1] = { '\0' }; //记录原始雷区数据
+char numspace[24 + 1][30 + 1] = { '\0' }; //直接记录个位置雷与数字
 
 int main()
 {
@@ -18,6 +21,7 @@ int main()
 
 	gamespacex = 10;
 	gamespacey = 12;
+	minenum = 20;
 	gamedraw();//绘制游戏区域。开始点击操作游戏的进程
 
 	closegraph();
@@ -55,7 +59,8 @@ void gamedraw()
 
 	ExMessage mouseclick;
 
-	
+	bool isthefirstclick = true;
+
 	while (true)
 	{
 		mouseclick = getmessage(EX_MOUSE | EX_KEY);
@@ -74,6 +79,11 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
+						if (isthefirstclick)
+						{
+							creatspace(k1, k2);
+							isthefirstclick = false;
+						}
 						openspace(k1, k2);
 						break;
 					}
@@ -88,6 +98,11 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
+						if (isthefirstclick)
+						{
+							creatspace(k1, k2);
+							isthefirstclick = false;
+						}
 						openspace(k1, k2);
 						break;
 					}
@@ -145,7 +160,14 @@ void openspace(int k1, int k2)
 	fillrectangle(left + k1 * each, top + k2 * each, left + k1 * each + square, top + k2 * each + square);
 	settextstyle(square, 0, _T("Consolas"));
 	settextcolor(BLACK);
-	printnum(left + k1 * each + square / 4, top + k2 * each, 3);
+	if (numspace[k1 + 1][k2 + 1] != '0' && numspace[k1 + 1][k2 + 1] != '*')
+		printnum(left + k1 * each + square / 4, top + k2 * each, numspace[k1 + 1][k2 + 1] - '0');
+	else if (numspace[k1 + 1][k2 + 1] == '*')
+	{
+		TCHAR mine[] = _T("💣");
+		settextcolor(RED);
+		outtextxy(left + k1 * each, top + k2 * each, mine);
+	}
 
 	return;
 }
@@ -224,5 +246,70 @@ void printnum(int x, int y, int printnum)//在x,y位置输出数字'printnum'
 	_stprintf_s(s, _T("%d"), printnum);
 	outtextxy(x, y, s);
 
+	return;
+}
+
+void creatspace(int k1, int k2)
+{
+	TCHAR waiting[] = _T("雷区生成，请稍后");
+	settextstyle(30, 0, _T("微软雅黑"));
+	settextcolor(BLACK);
+	outtextxy(550, 10, waiting);
+
+	int i1, i2;
+	for (i1 = 1; i1 <= gamespacex; i1++)
+	{
+		for (i2 = 1; i2 <= gamespacey; i2++)
+			space[i1][i2] = '.';
+	}//确定的游戏区域使用'.'标记
+
+	//随机生成开始
+	int a, b;//在(a,b)上放雷
+	int minenow = 0;
+	srand(time(NULL));
+	while (minenow < minenum)
+	{
+		a = rand() % gamespacex + 1;
+		b = rand() % gamespacey + 1;
+		if (a != k1 + 1 || b != k2 + 1)
+		{
+			if (space[a][b] == '.')
+			{
+				space[a][b] = '*';
+				minenow += 1;
+			}
+		}
+	}
+	clearrectangle(500, 5, 800, 40);
+	TCHAR start[] = _T("请开始游戏");
+	settextstyle(30, 0, _T("微软雅黑"));
+	settextcolor(BLACK);
+	outtextxy(580, 10, start);
+
+
+	//对雷区数据的预处理
+	int p1, p2;
+	int aroundmine;
+	for (i1 = 1; i1 <= gamespacex; i1++)
+	{
+		for (i2 = 1; i2 <= gamespacey; i2++)
+		{
+			if (space[i1][i2] == '*')
+				numspace[i1][i2] = '*';
+			else if (space[i1][i2] == '.')
+			{
+				aroundmine = 0;
+				for (p1 = -1; p1 <= 1; p1++)
+				{
+					for (p2 = -1; p2 <= 1; p2++)
+					{
+						if ((p1 != 0 || p2 != 0) && space[i1 + p1][i2 + p2] == '*')
+							aroundmine += 1;
+					}
+				}
+				numspace[i1][i2] = aroundmine + '0';
+			}
+		}
+	}
 	return;
 }
