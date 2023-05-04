@@ -62,6 +62,7 @@ void gamedraw()
 
 	bool isthefirstclick = true;
 	int operation_return;
+	int status=GAMEINPROGRESS;
 
 	while (true)
 	{
@@ -89,17 +90,33 @@ void gamedraw()
 
 						operation_return = operation(LEFTCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
+						{
 							minenum -= operation_return;
+							remainmine(minenum);
+							status = GAMEINPROGRESS;
+							if (adjustwin())
+								status = GAMEWIN;
+							gamestatusprint(status);
+						}
 						else if (operation_return == -2)
-							;
-						remainmine(minenum);
+						{
+							status = HITMINE;
+							gamestatusprint(status);
+						}
+						gameover(status);
 						break;
 					}
 					else if (mouseclick.message == WM_RBUTTONDOWN)
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						operation(BOTHCLICK, k1 + 1, k2 + 1);
+						operation_return = operation(BOTHCLICK, k1 + 1, k2 + 1);
+						if (operation_return == -2)
+						{
+							status = HITMINE;
+							gamestatusprint(status);
+							gameover(status);
+						}
 						break;
 					}
 					if (nowtime - time > 500)
@@ -114,10 +131,20 @@ void gamedraw()
 						
 						operation_return = operation(LEFTCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
+						{
 							minenum -= operation_return;
+							remainmine(minenum);
+							status = GAMEINPROGRESS;
+							if (adjustwin())
+								status = GAMEWIN;
+							gamestatusprint(status);
+						}
 						else if (operation_return == -2)
-							;
-						remainmine(minenum);
+						{
+							status = HITMINE;
+							gamestatusprint(status);
+						}
+						gameover(status);
 						break;
 					}
 				}
@@ -136,17 +163,33 @@ void gamedraw()
 
 						operation_return = operation(RIGHTCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
+						{
 							minenum -= operation_return;
+							remainmine(minenum);
+							status = GAMEINPROGRESS;
+							if (adjustwin())
+								status = GAMEWIN;
+							gamestatusprint(status);
+						}
 						else if (operation_return == -2)
-							;
-						remainmine(minenum);
+						{
+							status = HITMINE;
+							gamestatusprint(status);
+						}
+						gameover(status);
 						break;
 					}
 					else if (mouseclick.message == WM_LBUTTONDOWN)
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						operation(BOTHCLICK, k1 + 1, k2 + 1);
+						operation_return = operation(BOTHCLICK, k1 + 1, k2 + 1);
+						if (operation_return == -2)
+						{
+							status = HITMINE;
+							gamestatusprint(status);
+							gameover(status);
+						}
 						break;
 					}
 					if (nowtime - time > 500)
@@ -156,10 +199,20 @@ void gamedraw()
 
 						operation_return = operation(RIGHTCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
+						{
 							minenum -= operation_return;
+							remainmine(minenum);
+							status = GAMEINPROGRESS;
+							if (adjustwin())
+								status = GAMEWIN;
+							gamestatusprint(status);
+						}
 						else if (operation_return == -2)
-							;
-						remainmine(minenum);
+						{
+							status = HITMINE;
+							gamestatusprint(status);
+						}
+						gameover(status);
 						break;
 					}
 				}
@@ -190,8 +243,10 @@ void openspace(int k1, int k2)
 		printnum(left + k1 * each + square / 4, top + k2 * each, numspace[k1 + 1][k2 + 1] - '0');
 	else if (numspace[k1 + 1][k2 + 1] == '*')
 	{
+		setfillcolor(0x5848FF);
+		fillrectangle(left + k1 * each, top + k2 * each, left + k1 * each + square, top + k2 * each + square);
 		TCHAR mine[] = _T("💣");
-		settextcolor(RED);
+		settextcolor(BLACK);
 		outtextxy(left + k1 * each, top + k2 * each, mine);
 	}
 
@@ -262,7 +317,7 @@ void remainmine(int remain)
 	settextcolor(0x332300);
 	outtextxy(30, 30, remainmine);
 
-	clearrectangle(20, 80, 60, 120);
+	clearrectangle(20, 80, 60, 150);
 	printnum(30, 90, remain);
 	return;
 }
@@ -411,6 +466,8 @@ int operation(int operatype, int xspace, int yspace)
 			unopenspace(xspace - 1, yspace - 1);
 			return 0;
 		}
+		else
+			return 0;
 	}
 	else if (operatype == 3)//左右键（双击）
 	{
@@ -448,5 +505,93 @@ int operation(int operatype, int xspace, int yspace)
 		}
 		else if (minenow + '0' != numspace[xspace][yspace])
 			return 0;
+	}
+}
+
+void gamestatusprint(int status)
+{
+	TCHAR gameinprogress[] = _T("游戏进行中");
+	TCHAR hitmine[] = _T("触雷，游戏结束");
+	TCHAR gamewin[] = _T("胜利！游戏结束");
+
+	settextstyle(30, 0, _T("微软雅黑"));
+	settextcolor(BLACK);
+	clearrectangle(20, 670, 600, 720);
+	if(status==GAMEINPROGRESS)
+		outtextxy(30, 680, gameinprogress);
+	else if (status == HITMINE)
+	{
+		outtextxy(30, 680, hitmine);
+	}
+	else if (status == GAMEWIN)
+	{
+		outtextxy(30, 680, gamewin);
+	}
+	return;
+}
+
+bool adjustwin()
+{
+	int k1, k2;
+	int not_open = 0;
+	for (k1 = 1; k1 <= gamespacex; k1++)
+	{
+		for (k2 = 1; k2 <= gamespacey; k2++)
+		{
+			if (outputspace[k1][k2] == '.')
+				not_open++;
+		}
+	}
+	if (not_open == minenum)
+		return true;
+	else
+		return false;
+}
+
+void gameover(int status)
+{
+	{
+		int k1, k2;
+		if (status == GAMEINPROGRESS)
+			return;
+		else if (status == HITMINE)
+		{
+			for (k1 = 1; k1 <= gamespacex; k1++)
+			{
+				for (k2 = 1; k2 <= gamespacey; k2++)
+				{
+					if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
+					{
+						outputspace[k1][k2] = '*';
+						openspace(k1 - 1, k2 - 1);
+					}
+					else if (outputspace[k1][k2] == '!' && space[k1][k2] == '*')
+					{
+						outputspace[k1][k2] = '*';
+						openspace(k1 - 1, k2 - 1);
+					}
+					else if (outputspace[k1][k2] == '!' && space[k1][k2] != '*')
+						;
+				}
+			}
+			return;
+		}
+		else if (status == GAMEWIN)
+		{
+			for (k1 = 1; k1 <= gamespacex; k1++)
+			{
+				for (k2 = 1; k2 <= gamespacey; k2++)
+				{
+					if (outputspace[k1][k2] == '!')
+						;
+					else if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
+					{
+						outputspace[k1][k2] = '*';
+						markmine(k1 - 1, k2 - 1);
+					}
+				}
+			}
+			return;
+		}
 	}
 }
