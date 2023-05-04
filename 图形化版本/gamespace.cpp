@@ -11,6 +11,7 @@ int gamespacex, gamespacey;//长、宽的游戏区域
 int minenum;//游戏地雷的数目
 char space[24 + 1][30 + 1] = { '\0' }; //记录原始雷区数据
 char numspace[24 + 1][30 + 1] = { '\0' }; //直接记录个位置雷与数字
+char outputspace[24 + 1][30 + 1] = { '\0' };//记录输出的游戏数据
 
 int main()
 {
@@ -55,11 +56,12 @@ void gamedraw()
 	settextcolor(BLACK);
 	outtextxy(left + i1 * each + 50 + square / 4, top + square / 4, exit);
 
-	remainmine(20);
+	remainmine(minenum);
 
 	ExMessage mouseclick;
 
 	bool isthefirstclick = true;
+	int operation_return;
 
 	while (true)
 	{
@@ -84,14 +86,20 @@ void gamedraw()
 							creatspace(k1, k2);
 							isthefirstclick = false;
 						}
-						openspace(k1, k2);
+
+						operation_return = operation(LEFTCLICK, k1 + 1, k2 + 1);
+						if (operation_return >= -1)
+							minenum -= operation_return;
+						else if (operation_return == -2)
+							;
+						remainmine(minenum);
 						break;
 					}
 					else if (mouseclick.message == WM_RBUTTONDOWN)
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						markquestion(k1, k2);
+						operation(BOTHCLICK, k1 + 1, k2 + 1);
 						break;
 					}
 					if (nowtime - time > 500)
@@ -103,7 +111,13 @@ void gamedraw()
 							creatspace(k1, k2);
 							isthefirstclick = false;
 						}
-						openspace(k1, k2);
+						
+						operation_return = operation(LEFTCLICK, k1 + 1, k2 + 1);
+						if (operation_return >= -1)
+							minenum -= operation_return;
+						else if (operation_return == -2)
+							;
+						remainmine(minenum);
 						break;
 					}
 				}
@@ -119,21 +133,33 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						markmine(k1, k2);
+
+						operation_return = operation(RIGHTCLICK, k1 + 1, k2 + 1);
+						if (operation_return >= -1)
+							minenum -= operation_return;
+						else if (operation_return == -2)
+							;
+						remainmine(minenum);
 						break;
 					}
 					else if (mouseclick.message == WM_LBUTTONDOWN)
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						markquestion(k1, k2);
+						operation(BOTHCLICK, k1 + 1, k2 + 1);
 						break;
 					}
 					if (nowtime - time > 500)
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						markmine(k1, k2);
+
+						operation_return = operation(RIGHTCLICK, k1 + 1, k2 + 1);
+						if (operation_return >= -1)
+							minenum -= operation_return;
+						else if (operation_return == -2)
+							;
+						remainmine(minenum);
 						break;
 					}
 				}
@@ -236,6 +262,7 @@ void remainmine(int remain)
 	settextcolor(0x332300);
 	outtextxy(30, 30, remainmine);
 
+	clearrectangle(20, 80, 60, 120);
 	printnum(30, 90, remain);
 	return;
 }
@@ -295,7 +322,10 @@ void creatspace(int k1, int k2)
 		for (i2 = 1; i2 <= gamespacey; i2++)
 		{
 			if (space[i1][i2] == '*')
+			{
+				outputspace[i1][i2] = '.';
 				numspace[i1][i2] = '*';
+			}
 			else if (space[i1][i2] == '.')
 			{
 				aroundmine = 0;
@@ -308,8 +338,115 @@ void creatspace(int k1, int k2)
 					}
 				}
 				numspace[i1][i2] = aroundmine + '0';
+				outputspace[i1][i2] = '.';
 			}
 		}
 	}
 	return;
+}
+
+int operation(int operatype, int xspace, int yspace)
+{
+	if (operatype == 1)//左键点击
+	{
+		if (outputspace[xspace][yspace] != '.')
+			return 0;
+		if (numspace[xspace][yspace] == '0')
+		{
+			outputspace[xspace][yspace] = '0';
+			openspace(xspace - 1, yspace - 1);
+
+			int k1, k2;
+			for (k1 = -1; k1 <= 1; k1++)
+			{
+				for (k2 = -1; k2 <= 1; k2++)
+				{
+					if (k1 != 0 || k2 != 0)
+						operation(1, xspace + k1, yspace + k2);
+				}
+			}
+			return 0;
+		}
+		else if (numspace[xspace][yspace] == '*')
+		{
+			//所有地雷所在位置输出"*"
+			int k1, k2;
+			for (k1 = 1; k1 <= gamespacex; k1++)
+			{
+				for (k2 = 1; k2 <= gamespacey; k2++)
+				{
+					if (space[k1][k2] == '*' && outputspace[k1][k2] == '.')
+					{
+						outputspace[k1][k2] = '*';
+						openspace(k1 - 1, k2 - 1);
+					}
+				}
+			}
+			return -2;
+		}
+		else
+		{
+			outputspace[xspace][yspace] = numspace[xspace][yspace];
+			openspace(xspace - 1, yspace - 1);
+			return 0;
+		}
+	}
+	else if (operatype == 2)//右键点击
+	{
+		if (outputspace[xspace][yspace] == '.')
+		{
+			outputspace[xspace][yspace] = '!';
+			markmine(xspace - 1, yspace - 1);
+			return 1;
+		}
+		else if (outputspace[xspace][yspace] == '!')
+		{
+			outputspace[xspace][yspace] = '?';
+			markquestion(xspace - 1, yspace - 1);
+			return -1;
+		}
+		else if (outputspace[xspace][yspace] == '?')
+		{
+			outputspace[xspace][yspace] = '.';
+			unopenspace(xspace - 1, yspace - 1);
+			return 0;
+		}
+	}
+	else if (operatype == 3)//左右键（双击）
+	{
+		int minenow = 0;
+		int k1, k2;
+		if (outputspace[xspace][yspace] != '!' && outputspace[xspace][yspace] != '?')
+		{
+			for (k1 = -1; k1 <= 1; k1++)
+			{
+				for (k2 = -1; k2 <= 1; k2++)
+					if (outputspace[xspace + k1][yspace + k2] == '!')
+						minenow += 1;
+			}
+		}//统计周围标记雷的数量
+
+		if (minenow + '0' == numspace[xspace][yspace])
+		{
+			for (k1 = -1; k1 <= 1; k1++)
+			{
+				for (k2 = -1; k2 <= 1; k2++)
+				{
+					if (outputspace[xspace + k1][yspace + k2] == '.' && space[xspace + k1][yspace + k2] == '*')
+						return -2;
+				}
+			}
+			for (k1 = -1; k1 <= 1; k1++)
+			{
+				for (k2 = -1; k2 <= 1; k2++)
+				{
+					if (outputspace[xspace + k1][yspace + k2] == '.')
+						operation(LEFTCLICK, xspace + k1, yspace + k2);
+				}
+			}
+			return 0;
+		}
+		else if (minenow + '0' != numspace[xspace][yspace])
+			return 0;
+	}
 }
