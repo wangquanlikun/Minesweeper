@@ -9,10 +9,15 @@
 #include<Windows.h>
 
 void opening();
+
+void creatspace(int k1,int k2);//k1,k2是第一次点击的位置。不能有雷
 void gamedraw();
 void remainmine(int remain);
 
-void operation(int operatype, int k1, int k2);
+int operation(int operatype, int xspace, int yspace);
+#define LEFTCLICK 1
+#define RIGHTCLICK 2
+#define BOTHCLICK 3
 
 void openspace(int k1, int k2);
 void markmine(int k1, int k2);
