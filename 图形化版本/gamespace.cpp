@@ -1,10 +1,14 @@
-#include<stdio.h>
-#include<string.h>
-#include<time.h>
-#include"head.h"
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include "head.h"
 
 #include <graphics.h>
 #include <conio.h>
+
+#include <iostream>
+#include <thread>//多线程
+#include <chrono>//计时器
 
 
 int gamespacex, gamespacey;//长、宽的游戏区域
@@ -12,6 +16,7 @@ int minenum;//游戏地雷的数目
 char space[24 + 1][30 + 1] = { '\0' }; //记录原始雷区数据
 char numspace[24 + 1][30 + 1] = { '\0' }; //直接记录个位置雷与数字
 char outputspace[24 + 1][30 + 1] = { '\0' };//记录输出的游戏数据
+bool timecontinue = true;
 
 int main()
 {
@@ -23,7 +28,13 @@ int main()
 	gamespacex = 10;
 	gamespacey = 12;
 	minenum = 20;
+
+	std::thread timecutdown(printusetime);
+
 	gamedraw();//绘制游戏区域。开始点击操作游戏的进程
+
+	timecontinue = false;
+	timecutdown.join();
 
 	closegraph();
 	return 0;
@@ -522,10 +533,12 @@ void gamestatusprint(int status)
 	else if (status == HITMINE)
 	{
 		outtextxy(30, 680, hitmine);
+		timecontinue = false;
 	}
 	else if (status == GAMEWIN)
 	{
 		outtextxy(30, 680, gamewin);
+		timecontinue = false;
 	}
 	return;
 }
@@ -550,48 +563,73 @@ bool adjustwin()
 
 void gameover(int status)
 {
+	int k1, k2;
+	if (status == GAMEINPROGRESS)
+		return;
+	else if (status == HITMINE)
 	{
-		int k1, k2;
-		if (status == GAMEINPROGRESS)
-			return;
-		else if (status == HITMINE)
+		for (k1 = 1; k1 <= gamespacex; k1++)
 		{
-			for (k1 = 1; k1 <= gamespacex; k1++)
+			for (k2 = 1; k2 <= gamespacey; k2++)
 			{
-				for (k2 = 1; k2 <= gamespacey; k2++)
+				if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
 				{
-					if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
-					{
-						outputspace[k1][k2] = '*';
-						openspace(k1 - 1, k2 - 1);
-					}
-					else if (outputspace[k1][k2] == '!' && space[k1][k2] == '*')
-					{
-						outputspace[k1][k2] = '*';
-						openspace(k1 - 1, k2 - 1);
-					}
-					else if (outputspace[k1][k2] == '!' && space[k1][k2] != '*')
-						;
+					outputspace[k1][k2] = '*';
+					openspace(k1 - 1, k2 - 1);
 				}
-			}
-			return;
-		}
-		else if (status == GAMEWIN)
-		{
-			for (k1 = 1; k1 <= gamespacex; k1++)
-			{
-				for (k2 = 1; k2 <= gamespacey; k2++)
+				else if (outputspace[k1][k2] == '!' && space[k1][k2] == '*')
 				{
-					if (outputspace[k1][k2] == '!')
-						;
-					else if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
-					{
-						outputspace[k1][k2] = '*';
-						markmine(k1 - 1, k2 - 1);
-					}
+					outputspace[k1][k2] = '*';
+					openspace(k1 - 1, k2 - 1);
 				}
+				else if (outputspace[k1][k2] == '!' && space[k1][k2] != '*')
+					;
 			}
-			return;
 		}
+		return;
 	}
+	else if (status == GAMEWIN)
+	{
+		for (k1 = 1; k1 <= gamespacex; k1++)
+		{
+			for (k2 = 1; k2 <= gamespacey; k2++)
+			{
+				if (outputspace[k1][k2] == '!')
+					;
+				else if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
+				{
+					outputspace[k1][k2] = '*';
+					markmine(k1 - 1, k2 - 1);
+				}
+			}
+		}
+		return;
+	}
+}
+
+void printusetime()
+{
+	long long minutes = 0;
+	long long seconds = 0;
+
+	while (true) 
+	{
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		seconds++;
+		if (seconds >= 60) {
+			minutes ++;
+			seconds = 0;
+		}
+		clearrectangle(1050, 670, 1280, 720);
+		settextstyle(35, 0, _T("Consolas"));
+		settextcolor(BLACK);
+		printnum(1100, 680, minutes);
+		TCHAR a[] = _T(":");
+		outtextxy(1125, 680, a);
+		printnum(1150, 680, seconds);
+
+		if (!timecontinue)
+			break;
+	}
+	return;
 }
