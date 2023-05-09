@@ -20,6 +20,8 @@ void gamestatusprint(int status);
 #define HITMINE 2
 #define GAMEWIN 3
 
+void printusetime();
+
 int operation(int operatype, int xspace, int yspace);
 #define LEFTCLICK 1
 #define RIGHTCLICK 2
