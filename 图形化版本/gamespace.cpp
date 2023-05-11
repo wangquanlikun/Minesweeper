@@ -130,12 +130,21 @@ void gamedraw()
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
 						operation_return = operation(BOTHCLICK, k1 + 1, k2 + 1);
-						if (operation_return == -2)
+						if (operation_return >= -1)
+						{
+							minenum -= operation_return;
+							remainmine(minenum);
+							status = GAMEINPROGRESS;
+							if (adjustwin())
+								status = GAMEWIN;
+							gamestatusprint(status);
+						}
+						else if (operation_return == -2)
 						{
 							status = HITMINE;
 							gamestatusprint(status);
-							gameover(status);
 						}
+						gameover(status);
 						break;
 					}
 					if (nowtime - time > 500)
@@ -203,12 +212,21 @@ void gamedraw()
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
 						operation_return = operation(BOTHCLICK, k1 + 1, k2 + 1);
-						if (operation_return == -2)
+						if (operation_return >= -1)
+						{
+							minenum -= operation_return;
+							remainmine(minenum);
+							status = GAMEINPROGRESS;
+							if (adjustwin())
+								status = GAMEWIN;
+							gamestatusprint(status);
+						}
+						else if (operation_return == -2)
 						{
 							status = HITMINE;
 							gamestatusprint(status);
-							gameover(status);
 						}
+						gameover(status);
 						break;
 					}
 					if (nowtime - time > 500)
