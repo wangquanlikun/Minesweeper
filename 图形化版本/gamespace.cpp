@@ -25,6 +25,14 @@ int main()
 	setbkmode(TRANSPARENT);
 	cleardevice();
 
+	//设置输出效果为抗锯齿
+	LOGFONT f;
+	gettextstyle(&f);      // 获取当前字体设置
+	f.lfQuality = ANTIALIASED_QUALITY;  // 设置输出效果为抗锯齿  
+	settextstyle(&f);      // 设置字体样式
+
+	//在这里加入游戏开始选择难度的函数。使用这个函数设置下述三个数据
+
 	gamespacex = 10;
 	gamespacey = 12;
 	minenum = 20;
