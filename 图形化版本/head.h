@@ -5,10 +5,26 @@
 #define HEIGHT 720
 
 #define BACKGROUNDCOLOR 0xE7EFDE
+#define OPENCOLOE WHITE
+#define UNOPENCOLOR 0xFFDB9D
+#define MARKMINECOLOR 0xFFFBE8
+#define MARKQUESTIONCOLOR 0xE3FEFF
+#define MINEBOOMCOLOR 0x5848FF
 
 #include<Windows.h>
 
-void opening();
+struct judge
+{
+	int spacex = 0;
+	int spacey = 0;
+	int mine = 0;
+};
+typedef struct judge JUDGE;
+
+int opening();
+JUDGE setting(int flag);
+
+int inputnum();
 
 void creatspace(int k1,int k2);//k1,k2是第一次点击的位置。不能有雷
 void gamedraw();
@@ -36,5 +52,9 @@ void markquestion(int k1, int k2);
 void unopenspace(int k1, int k2);
 
 void printnum(int x, int y, int printnum);
+
+void fileoperation(int type);//对文件的操作
+#define READ 1
+#define WRITE 2
 
 #endif
