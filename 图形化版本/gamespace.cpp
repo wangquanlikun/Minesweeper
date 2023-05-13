@@ -13,9 +13,9 @@
 
 int gamespacex, gamespacey;//长、宽的游戏区域
 int minenum;//游戏地雷的数目
-char space[24 + 1][30 + 1] = { '\0' }; //记录原始雷区数据
-char numspace[24 + 1][30 + 1] = { '\0' }; //直接记录个位置雷与数字
-char outputspace[24 + 1][30 + 1] = { '\0' };//记录输出的游戏数据
+char space[30 + 1][30 + 1] = { '\0' }; //记录原始雷区数据
+char numspace[30 + 1][30 + 1] = { '\0' }; //直接记录个位置雷与数字
+char outputspace[30 + 1][30 + 1] = { '\0' };//记录输出的游戏数据
 bool timecontinue = true;
 
 int main()
@@ -32,10 +32,12 @@ int main()
 	settextstyle(&f);      // 设置字体样式
 
 	//在这里加入游戏开始选择难度的函数。使用这个函数设置下述三个数据
-
-	gamespacex = 10;
-	gamespacey = 12;
-	minenum = 20;
+	int flag;
+	flag = opening();
+	JUDGE game = setting(flag);
+	gamespacex = game.spacex;
+	gamespacey = game.spacey;
+	minenum = game.mine;
 
 	std::thread timecutdown(printusetime);
 
@@ -66,14 +68,18 @@ void gamedraw()
 	for (i1 = 0; i1 < gamespacex; i1++)
 	{
 		for (i2 = 0; i2 < gamespacey; i2++)
+		{
 			rectangle(left + i1 * each, top + i2 * each, left + i1 * each + square, top + i2 * each + square);
+			setfillcolor(UNOPENCOLOR);
+			fillrectangle(left + i1 * each, top + i2 * each, left + i1 * each + square, top + i2 * each + square);
+		}
 	}
 
-	rectangle(left + i1 * each + 50, top, left + i1 * each + square * 2 + 50, top + square);
+	rectangle(left + i1 * each + 50, top, left + i1 * each + 150, top + 50);
 	TCHAR exit[] = _T("退出游戏");
-	settextstyle(square / 2, 0, _T("微软雅黑"));
+	settextstyle(30, 0, _T("微软雅黑"));
 	settextcolor(BLACK);
-	outtextxy(left + i1 * each + 50 + square / 4, top + square / 4, exit);
+	outtextxy(left + i1 * each + 56, top + 10, exit);
 
 	remainmine(minenum);
 
@@ -256,7 +262,7 @@ void gamedraw()
 			}
 		}
 
-		else if (((mouseclick.x >= left + i1 * each + 50 && mouseclick.x <= left + i1 * each + square * 2 + 50) && (mouseclick.y >= top && mouseclick.y <= top + square)) && mouseclick.lbutton == 1)
+		else if (((mouseclick.x >= left + i1 * each + 50 && mouseclick.x <= left + i1 * each + 150) && (mouseclick.y >= top && mouseclick.y <= top + 50)) && mouseclick.lbutton == 1)
 			break;
 	}
 	return;
@@ -280,7 +286,7 @@ void openspace(int k1, int k2)
 		printnum(left + k1 * each + square / 4, top + k2 * each, numspace[k1 + 1][k2 + 1] - '0');
 	else if (numspace[k1 + 1][k2 + 1] == '*')
 	{
-		setfillcolor(0x5848FF);
+		setfillcolor(MINEBOOMCOLOR);
 		fillrectangle(left + k1 * each, top + k2 * each, left + k1 * each + square, top + k2 * each + square);
 		TCHAR mine[] = _T("💣");
 		settextcolor(BLACK);
@@ -302,7 +308,7 @@ void markmine(int k1, int k2)
 	left = WIDTH / 2 - (gamespacex / 2) * 6 * interval;
 	right = left + (gamespacex - 1) * each + square;
 
-	setfillcolor(0xFFFBE8);
+	setfillcolor(MARKMINECOLOR);
 	fillrectangle(left + k1 * each, top + k2 * each, left + k1 * each + square, top + k2 * each + square);
 	settextstyle(square, 0, _T("Consolas"));
 	settextcolor(RED);
@@ -323,7 +329,7 @@ void markquestion(int k1, int k2)
 	left = WIDTH / 2 - (gamespacex / 2) * 6 * interval;
 	right = left + (gamespacex - 1) * each + square;
 
-	setfillcolor(0xE3FEFF);
+	setfillcolor(MARKQUESTIONCOLOR);
 	fillrectangle(left + k1 * each, top + k2 * each, left + k1 * each + square, top + k2 * each + square);
 	settextstyle(square, 0, _T("Consolas"));
 	settextcolor(BLUE);
@@ -342,7 +348,7 @@ void unopenspace(int k1, int k2)
 	left = WIDTH / 2 - (gamespacex / 2) * 6 * interval;
 	right = left + (gamespacex - 1) * each + square;
 
-	setfillcolor(0xE7EFDE);
+	setfillcolor(UNOPENCOLOR);
 	fillrectangle(left + k1 * each, top + k2 * each, left + k1 * each + square, top + k2 * each + square);
 	return;
 }
