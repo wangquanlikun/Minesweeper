@@ -17,12 +17,15 @@ char space[30 + 1][30 + 1] = { '\0' }; //记录原始雷区数据
 char numspace[30 + 1][30 + 1] = { '\0' }; //直接记录个位置雷与数字
 char outputspace[30 + 1][30 + 1] = { '\0' };//记录输出的游戏数据
 bool timecontinue = true;
+bool replay = false;
 
 int main()
 {
 	initgraph(WIDTH, HEIGHT);
 	setbkcolor(0xE7EFDE);
 	setbkmode(TRANSPARENT);
+
+	restart:
 	cleardevice();
 
 	//设置输出效果为抗锯齿
@@ -45,6 +48,13 @@ int main()
 
 	timecontinue = false;
 	timecutdown.join();
+
+	if (replay)
+	{
+		replay = false;
+		timecontinue = true;
+		goto restart;
+	}
 
 	closegraph();
 	return 0;
@@ -76,10 +86,13 @@ void gamedraw()
 	}
 
 	rectangle(left + i1 * each + 50, top, left + i1 * each + 150, top + 50);
+	rectangle(left + i1 * each + 50, top + 75, left + i1 * each + 150, top + 125);
 	TCHAR exit[] = _T("退出游戏");
+	TCHAR restart[] = _T("重新开始");
 	settextstyle(30, 0, _T("微软雅黑"));
 	settextcolor(BLACK);
 	outtextxy(left + i1 * each + 56, top + 10, exit);
+	outtextxy(left + i1 * each + 56, top + 10 + 75, restart);
 
 	remainmine(minenum);
 
@@ -264,6 +277,11 @@ void gamedraw()
 
 		else if (((mouseclick.x >= left + i1 * each + 50 && mouseclick.x <= left + i1 * each + 150) && (mouseclick.y >= top && mouseclick.y <= top + 50)) && mouseclick.lbutton == 1)
 			break;
+		else if (((mouseclick.x >= left + i1 * each + 50 && mouseclick.x <= left + i1 * each + 150) && (mouseclick.y >= top + 75 && mouseclick.y <= top + 125)) && mouseclick.lbutton == 1)
+		{
+			replay = true;
+			break;
+		}
 	}
 	return;
 }
@@ -382,6 +400,17 @@ void creatspace(int k1, int k2)
 	outtextxy(550, 10, waiting);
 
 	int i1, i2;
+
+	for (i1 = 0; i1 <= 30; i1++)
+	{
+		for (i2 = 0; i2 <= 30; i2++)
+		{
+			space[i1][i2] = '\0';
+			outputspace[i1][i2] = '\0';
+			numspace[i1][i2] = '\0';
+		}
+	}
+
 	for (i1 = 1; i1 <= gamespacex; i1++)
 	{
 		for (i2 = 1; i2 <= gamespacey; i2++)
