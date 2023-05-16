@@ -148,6 +148,12 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
+						if (isthefirstclick)
+						{
+							creatspace(k1, k2);
+							isthefirstclick = false;
+						}
+
 						operation_return = operation(BOTHCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
 						{
@@ -207,6 +213,11 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
+						if (isthefirstclick)
+						{
+							creatspace(k1, k2);
+							isthefirstclick = false;
+						}
 
 						operation_return = operation(RIGHTCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
@@ -230,6 +241,12 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
+						if (isthefirstclick)
+						{
+							creatspace(k1, k2);
+							isthefirstclick = false;
+						}
+
 						operation_return = operation(BOTHCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
 						{
@@ -252,6 +269,11 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
+						if (isthefirstclick)
+						{
+							creatspace(k1, k2);
+							isthefirstclick = false;
+						}
 
 						operation_return = operation(RIGHTCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
@@ -401,9 +423,9 @@ void creatspace(int k1, int k2)
 
 	int i1, i2;
 
-	for (i1 = 0; i1 <= 30; i1++)
+	for (i1 = 0; i1 <= 31; i1++)
 	{
-		for (i2 = 0; i2 <= 30; i2++)
+		for (i2 = 0; i2 <= 31; i2++)
 		{
 			space[i1][i2] = '\0';
 			outputspace[i1][i2] = '\0';
