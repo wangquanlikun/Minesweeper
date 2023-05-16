@@ -624,11 +624,15 @@ void gamestatusprint(int status)
 	{
 		outtextxy(30, 680, hitmine);
 		timecontinue = false;
+		HWND hWnd = GetForegroundWindow();
+		MessageBox(hWnd, L"Hit mine, you lose", L"游戏失败", MB_OK | MB_ICONERROR);
 	}
 	else if (status == GAMEWIN)
 	{
 		outtextxy(30, 680, gamewin);
 		timecontinue = false;
+		HWND hWnd = GetForegroundWindow();
+		MessageBox(hWnd, L"Game over, you win", L"游戏胜利", MB_OK | MB_ICONINFORMATION);
 	}
 	return;
 }
