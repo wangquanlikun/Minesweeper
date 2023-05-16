@@ -13,9 +13,9 @@
 
 int gamespacex, gamespacey;//长、宽的游戏区域
 int minenum;//游戏地雷的数目
-char space[30 + 1][30 + 1] = { '\0' }; //记录原始雷区数据
-char numspace[30 + 1][30 + 1] = { '\0' }; //直接记录个位置雷与数字
-char outputspace[30 + 1][30 + 1] = { '\0' };//记录输出的游戏数据
+char space[30 + 2][30 + 2] = { '\0' }; //记录原始雷区数据
+char numspace[30 + 2][30 + 2] = { '\0' }; //直接记录个位置雷与数字
+char outputspace[30 + 2][30 + 2] = { '\0' };//记录输出的游戏数据
 bool timecontinue = true;
 bool replay = false;
 
@@ -476,7 +476,7 @@ int operation(int operatype, int xspace, int yspace)
 {
 	if (operatype == 1)//左键点击
 	{
-		if (outputspace[xspace][yspace] != '.')
+		if ((outputspace[xspace][yspace] >= '0' && outputspace[xspace][yspace] <= '9') || outputspace[xspace][yspace] == '!')
 			return 0;
 		if (numspace[xspace][yspace] == '0')
 		{
@@ -488,7 +488,7 @@ int operation(int operatype, int xspace, int yspace)
 			{
 				for (k2 = -1; k2 <= 1; k2++)
 				{
-					if (k1 != 0 || k2 != 0)
+					if (outputspace[xspace + k1][yspace + k2] == '.' || outputspace[xspace + k1][yspace + k2] == '?')
 						operation(1, xspace + k1, yspace + k2);
 				}
 			}
@@ -496,7 +496,9 @@ int operation(int operatype, int xspace, int yspace)
 		}
 		else if (numspace[xspace][yspace] == '*')
 		{
-			//所有地雷所在位置输出"*"
+			outputspace[xspace][yspace] = '*';
+			openspace(xspace - 1, yspace - 1);
+
 			int k1, k2;
 			for (k1 = 1; k1 <= gamespacex; k1++)
 			{
@@ -508,7 +510,7 @@ int operation(int operatype, int xspace, int yspace)
 						openspace(k1 - 1, k2 - 1);
 					}
 				}
-			}
+			}//所有地雷所在位置输出
 			return -2;
 		}
 		else
@@ -545,39 +547,44 @@ int operation(int operatype, int xspace, int yspace)
 	{
 		int minenow = 0;
 		int k1, k2;
-		if (outputspace[xspace][yspace] != '!' && outputspace[xspace][yspace] != '?')
+		if (outputspace[xspace][yspace] != '!' && outputspace[xspace][yspace] != '?' && outputspace[xspace][yspace] != '.')
 		{
 			for (k1 = -1; k1 <= 1; k1++)
 			{
 				for (k2 = -1; k2 <= 1; k2++)
 					if (outputspace[xspace + k1][yspace + k2] == '!')
 						minenow += 1;
-			}
-		}//统计周围标记雷的数量
+			}//统计周围标记雷的数量
 
-		if (minenow + '0' == numspace[xspace][yspace])
-		{
-			for (k1 = -1; k1 <= 1; k1++)
+			if (minenow + '0' == numspace[xspace][yspace])
 			{
-				for (k2 = -1; k2 <= 1; k2++)
+				for (k1 = -1; k1 <= 1; k1++)
 				{
-					if (outputspace[xspace + k1][yspace + k2] == '.' && space[xspace + k1][yspace + k2] == '*')
-						return -2;
+					for (k2 = -1; k2 <= 1; k2++)
+					{
+						if (outputspace[xspace + k1][yspace + k2] == '.' && space[xspace + k1][yspace + k2] == '*')
+							return -2;
+						else if (outputspace[xspace + k1][yspace + k2] == '!' && space[xspace + k1][yspace + k2] == '.')
+							return -2;
+					}
 				}
-			}
-			for (k1 = -1; k1 <= 1; k1++)
-			{
-				for (k2 = -1; k2 <= 1; k2++)
+				for (k1 = -1; k1 <= 1; k1++)
 				{
-					if (outputspace[xspace + k1][yspace + k2] == '.')
-						operation(LEFTCLICK, xspace + k1, yspace + k2);
+					for (k2 = -1; k2 <= 1; k2++)
+					{
+						if (outputspace[xspace + k1][yspace + k2] == '.' || outputspace[xspace + k1][yspace + k2] == '?')
+							operation(LEFTCLICK, xspace + k1, yspace + k2);
+					}
 				}
+				return 0;
 			}
-			return 0;
+			else if (minenow + '0' != numspace[xspace][yspace])
+				return 0;
 		}
-		else if (minenow + '0' != numspace[xspace][yspace])
+		else
 			return 0;
 	}
+	return 0;
 }
 
 void gamestatusprint(int status)
@@ -607,16 +614,19 @@ void gamestatusprint(int status)
 bool adjustwin()
 {
 	int k1, k2;
-	int not_open = 0;
+	bool openall = true;
 	for (k1 = 1; k1 <= gamespacex; k1++)
 	{
 		for (k2 = 1; k2 <= gamespacey; k2++)
 		{
-			if (outputspace[k1][k2] == '.')
-				not_open++;
+			if (space[k1][k2] == '.' && (outputspace[k1][k2] == '.' || outputspace[k1][k2] == '?' || outputspace[k1][k2] == '!'))
+			{
+				openall = false;
+				break;
+			}
 		}
 	}
-	if (not_open == minenum)
+	if (openall)
 		return true;
 	else
 		return false;
@@ -633,18 +643,11 @@ void gameover(int status)
 		{
 			for (k2 = 1; k2 <= gamespacey; k2++)
 			{
-				if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
+				if (space[k1][k2] == '*')
 				{
 					outputspace[k1][k2] = '*';
 					openspace(k1 - 1, k2 - 1);
 				}
-				else if (outputspace[k1][k2] == '!' && space[k1][k2] == '*')
-				{
-					outputspace[k1][k2] = '*';
-					openspace(k1 - 1, k2 - 1);
-				}
-				else if (outputspace[k1][k2] == '!' && space[k1][k2] != '*')
-					;
 			}
 		}
 		return;
@@ -655,9 +658,7 @@ void gameover(int status)
 		{
 			for (k2 = 1; k2 <= gamespacey; k2++)
 			{
-				if (outputspace[k1][k2] == '!')
-					;
-				else if (outputspace[k1][k2] == '.' && space[k1][k2] == '*')
+				if (space[k1][k2] == '*')
 				{
 					outputspace[k1][k2] = '*';
 					markmine(k1 - 1, k2 - 1);
@@ -673,14 +674,8 @@ void printusetime()
 	long long minutes = 0;
 	long long seconds = 0;
 
-	while (true) 
+	while (timecontinue) 
 	{
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-		seconds++;
-		if (seconds >= 60) {
-			minutes ++;
-			seconds = 0;
-		}
 		clearrectangle(1050, 670, 1280, 720);
 		settextstyle(35, 0, _T("Consolas"));
 		settextcolor(BLACK);
@@ -689,8 +684,12 @@ void printusetime()
 		outtextxy(1125, 680, a);
 		printnum(1150, 680, seconds);
 
-		if (!timecontinue)
-			break;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		seconds++;
+		if (seconds >= 60) {
+			minutes ++;
+			seconds = 0;
+		}
 	}
 	return;
 }
