@@ -4,14 +4,14 @@
 #define WIN 3
 
 void getspace();//读入雷区与预处理数据模块
-int opertion(int process, int xspace, int yspace);//处理对雷区操作模块
+int operation(int process, int xspace, int yspace);//处理对雷区操作模块
 int output(int status, int steps, int remains);//输出操作结果模块
 void gameover(int status);//游戏结束游戏输出处理模块
 int adjustwin(int remains);//判断点开所有非雷格子胜利的模块
 
-char space[24 + 1][30 + 1] = {'\0'}; //记录原始雷区数据
-char numspace[24 + 1][30 + 1] = {'\0'}; //直接记录个位置雷与数字
-char outputspace[24 + 1][30 + 1] = {'\0'};//记录输出的游戏数据
+char space[30 + 2][30 + 2] = {'\0'}; //记录原始雷区数据
+char numspace[30 + 2][30 + 2] = {'\0'}; //直接记录个位置雷与数字
+char outputspace[30 + 2][30 + 2] = {'\0'};//记录输出的游戏数据
 int N_space = 0, M_space = 0, C_space = 0; //行数 N，列数 M 和雷数 C
 
 int main()
@@ -21,9 +21,8 @@ int main()
     scanf("%d", &gamelevel);
     if(gamelevel==4)
         scanf("%d%d%d", &N_space, &M_space, &C_space);
-    //雷区大小不能超过 24 × 30
-    if(N_space>24)
-        N_space = 24;
+    if(N_space>30)
+        N_space = 30;
     if(M_space>30)
         M_space = 30;
     getchar();//读取换行符'\n'
@@ -51,13 +50,13 @@ int main()
     int status;
     while(1)
     {
-        operation_return = opertion(process, xspace, yspace);
+        operation_return = operation(process, xspace, yspace);
         steps += 1;
         if(operation_return>=-1)
         {
             remains -= operation_return;
             status = output(CONTINUE, steps, remains);
-            if(status==3)
+            if(status==WIN)
                 break;
         }
         else if(operation_return==-2)//-2表示触雷
@@ -112,19 +111,37 @@ int output(int status, int steps, int remains)//status状态：1继续，2触雷
 int adjustwin(int remains)//3 = win  //如果玩家点开了所有没有雷的格子也判断胜利
 {
     int k1, k2;
+    int p = 1;
+    for (k1 = 1; k1 <= N_space;k1++)
+    {
+        for (k2 = 1; k2 <= M_space;k2++)
+        {
+            if(space[k1][k2]=='.'&&(outputspace[k1][k2]=='.'||outputspace[k1][k2]=='?'||outputspace[k1][k2]=='!'))
+            {
+                p = 0;
+                break;
+            }
+        }
+    }
+    if(p==1)
+        return WIN;
+    else
+        return 0;
+    
+    /*int k1, k2;
     int not_open = 0;
     for (k1 = 1; k1 <= N_space;k1++)
     {
         for (k2 = 1; k2 <= M_space;k2++)
         {
-            if(outputspace[k1][k2]=='.')
+            if(outputspace[k1][k2]=='.'||outputspace[k1][k2]=='?')
                 not_open++;
         }
     }
     if(not_open==remains)
         return WIN;
     else
-        return 0;
+        return 0;*/
 }
 
 void gameover(int status)//胜利或失败之后需要在输出棋盘时，所有地雷所在位置输出"*"，其余位置输出当前操作后的棋盘状态
@@ -138,12 +155,8 @@ void gameover(int status)//胜利或失败之后需要在输出棋盘时，所�
         {
             for (k2 = 1; k2 <= M_space;k2++)
             {
-                if(outputspace[k1][k2] == '.' && space[k1][k2] == '*')
+                if(space[k1][k2] == '*')
                     outputspace[k1][k2] = '*';
-                else if (outputspace[k1][k2] == '!' && space[k1][k2] == '*')
-                    outputspace[k1][k2] = '*';
-                else if(outputspace[k1][k2]=='!'&&space[k1][k2]!='*')
-                    ;
             }
         }
         return;
@@ -154,9 +167,7 @@ void gameover(int status)//胜利或失败之后需要在输出棋盘时，所�
         {
             for (k2 = 1; k2 <= M_space;k2++)
             {
-                if(outputspace[k1][k2]=='!')
-                    outputspace[k1][k2] = '*';
-                else if(outputspace[k1][k2]=='.'&&space[k1][k2]=='*')
+                if(space[k1][k2]=='*')
                     outputspace[k1][k2] = '*';
             }
         }
@@ -164,13 +175,14 @@ void gameover(int status)//胜利或失败之后需要在输出棋盘时，所�
     }
 }
 
-int opertion(int process, int xspace, int yspace)//函数返回值是减少的雷数量；-2表示触雷，-3表示胜利
+int operation(int process, int xspace, int yspace)//函数返回值是减少的雷数量；-2表示触雷，-3表示胜利
 {
+    if(xspace<1||yspace<1||xspace>N_space||yspace>M_space||space[xspace][yspace]=='\0')
+        return 0;
+
     if(process==1)
     {
-        if(xspace<0||yspace<0||xspace>24||yspace>30||space[xspace][yspace]=='\0')
-            return 0;
-        if(outputspace[xspace][yspace]!='.')
+        if((outputspace[xspace][yspace]>='0'&&outputspace[xspace][yspace]<='9')||outputspace[xspace][yspace]=='!')
             return 0;
 
         if(numspace[xspace][yspace]=='0')
@@ -181,24 +193,25 @@ int opertion(int process, int xspace, int yspace)//函数返回值是减少的�
             {
                 for (k2 = -1; k2 <= 1;k2++)
                 {
-                    if(k1!=0||k2!=0)
-                        opertion(1, xspace + k1, yspace + k2);//递归打开方格
+                    if(outputspace[xspace+k1][yspace+k2]=='.'||outputspace[xspace+k1][yspace+k2]=='?')
+                        operation(1, xspace + k1, yspace + k2); // 递归打开方格
                 }
             }
             return 0;
         }
         else if(numspace[xspace][yspace]=='*')
         {
-            //所有地雷所在位置输出"*"
+            outputspace[xspace][yspace] = '*';
+            
             int k1, k2;
-            for (k1 = 1; k1 <= xspace;k1++)
+            for (k1 = 1; k1 <= N_space;k1++)
             {
-                for (k2 = 1; k2 <= yspace;k2++)
+                for (k2 = 1; k2 <= M_space;k2++)
                 {
                     if(space[k1][k2]=='*'&&outputspace[k1][k2]=='.')
                         outputspace[k1][k2] = '*';
                 }
-            }
+            }//所有地雷所在位置输出"*"
             return -2;
         }
         else
@@ -210,8 +223,12 @@ int opertion(int process, int xspace, int yspace)//函数返回值是减少的�
     else if(process==2)
     {
         if(outputspace[xspace][yspace]=='.'||outputspace[xspace][yspace]=='?')
+        {
             outputspace[xspace][yspace] = '!';
-        return 1;
+            return 1;
+        }
+        else
+            return 0;
     }
     else if(process==3)
     {
@@ -225,6 +242,8 @@ int opertion(int process, int xspace, int yspace)//函数返回值是减少的�
             outputspace[xspace][yspace] = '?';
             return 0;
         }
+        else
+            return 0;
     }
     else if(process==4)
     {
@@ -238,44 +257,55 @@ int opertion(int process, int xspace, int yspace)//函数返回值是减少的�
             outputspace[xspace][yspace] = '.';
             return 0;
         }
+        else
+            return 0;
     }
     else if(process==9)
     {
-        int minenow;
+        int minenow = 0;
         int k1, k2;
-        if(outputspace[xspace][yspace]!='!'&&outputspace[xspace][yspace]!='?')
+        if(outputspace[xspace][yspace]!='!'&&outputspace[xspace][yspace]!='?'&&outputspace[xspace][yspace]!='.')
         {
             for (k1 = -1; k1 <= 1;k1++)
             {
                 for (k2 = -1; k2 <= 1;k2++)
-                if(outputspace[xspace+k1][yspace+k2]=='!')
+                {
+                    if(outputspace[xspace+k1][yspace+k2]=='!')
                         minenow += 1;
-            }
-        }//统计周围标记雷的数量
-
-        if(minenow+'0'==numspace[xspace][yspace])
-        {
-            for (k1 = -1; k1 <= 1;k1++)
-            {
-                for (k2 = -1; k2 <= 1;k2++)
-                {
-                    if(outputspace[xspace+k1][yspace+k2]=='.'&&space[xspace+k1][yspace+k2]=='*')
-                        return -2;
                 }
-            }
-            for (k1 = -1; k1 <= 1;k1++)
+            }//统计周围标记雷的数量
+            
+            if(minenow+'0'==numspace[xspace][yspace])
             {
-                for (k2 = -1; k2 <= 1;k2++)
+                for (k1 = -1; k1 <= 1;k1++)
                 {
-                    if(outputspace[xspace+k1][yspace+k2]=='.')
-                        opertion(1, xspace + k1, yspace + k2);
+                    for (k2 = -1; k2 <= 1;k2++)
+                    {
+                        if(outputspace[xspace+k1][yspace+k2]=='.'&&space[xspace+k1][yspace+k2]=='*')
+                            return -2;
+                        else if(outputspace[xspace+k1][yspace+k2]=='!'&&space[xspace+k1][yspace+k2]=='.')
+                            return -2;
+                    }
                 }
+                for (k1 = -1; k1 <= 1;k1++)
+                {
+                    for (k2 = -1; k2 <= 1;k2++)
+                    {
+                        if(outputspace[xspace+k1][yspace+k2]=='.'||outputspace[xspace+k1][yspace+k2]=='?')
+                            operation(1, xspace + k1, yspace + k2);
+                    }
+                }
+                return 0;
             }
-            return 0;
+            else if(minenow+'0'!= numspace[xspace][yspace])
+                return 0;
         }
-        else if(minenow+'0'!=numspace[xspace][yspace])
+        else
             return 0;
     }
+    else
+        return 0;
+    return 0;
 }
 
 void getspace()//读取扫雷区域，生成输出区域，同时生成含数量的区域
