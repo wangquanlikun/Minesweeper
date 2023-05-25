@@ -19,6 +19,10 @@ char outputspace[30 + 2][30 + 2] = { '\0' };//记录输出的游戏数据
 bool timecontinue = true;
 bool replay = false;
 
+int minutes = 0;
+int seconds = 0;
+int gamemode;
+
 int main()
 {
 	initgraph(WIDTH, HEIGHT);
@@ -34,13 +38,29 @@ int main()
 	f.lfQuality = ANTIALIASED_QUALITY;  // 设置输出效果为抗锯齿  
 	settextstyle(&f);      // 设置字体样式
 
-	//在这里加入游戏开始选择难度的函数。使用这个函数设置下述三个数据
 	int flag;
 	flag = opening();
-	JUDGE game = setting(flag);
-	gamespacex = game.spacex;
-	gamespacey = game.spacey;
-	minenum = game.mine;
+
+	if (flag == 1)//点击开始游戏
+	{
+		JUDGE game = setting(flag);
+		gamespacex = game.spacex;
+		gamespacey = game.spacey;
+		minenum = game.mine;
+		gamemode = game.gamemode;
+	}
+	else if (flag == 2)//点击查看记录
+	{
+		int fileop_return = fileoperation(READ, 0, 0, 0);
+		if (fileop_return == 0)
+			goto restart;
+	}
+	else if (flag == 3)
+	{
+		closegraph();
+		return 0;
+	}
+	
 
 	std::thread timecutdown(printusetime);
 
@@ -631,6 +651,8 @@ void gamestatusprint(int status)
 	{
 		outtextxy(30, 680, gamewin);
 		timecontinue = false;
+
+		fileoperation(WRITE, minutes, seconds, gamemode);
 		HWND hWnd = GetForegroundWindow();
 		MessageBox(hWnd, L"Game over, you win", L"游戏胜利", MB_OK | MB_ICONINFORMATION);
 	}
@@ -697,8 +719,8 @@ void gameover(int status)
 
 void printusetime()
 {
-	long long minutes = 0;
-	long long seconds = 0;
+	minutes = 0;
+	seconds = 0;
 
 	while (timecontinue) 
 	{
