@@ -46,8 +46,7 @@ int opening()
 				}
 				else if (y > 300 && y < 380)	//退出游戏
 				{					
-					closegraph();
-					return 0;
+					return 3;
 				}
 			}
 		}
@@ -91,6 +90,7 @@ JUDGE setting(int flag)
 						game.spacex = 9;
 						game.spacey = 9;
 						game.mine = 10;
+						game.gamemode = 1;
 						return game;
 					}
 					else if (y > 200 && y < 280)	//中级
@@ -98,6 +98,7 @@ JUDGE setting(int flag)
 						game.spacex = 16;
 						game.spacey = 16;
 						game.mine = 40;
+						game.gamemode = 2;
 						return game;
 					}
 					else if (y > 300 && y < 380)	//高级
@@ -105,11 +106,15 @@ JUDGE setting(int flag)
 						game.spacex = 30;
 						game.spacey = 24;
 						game.mine = 99;
+						game.gamemode = 3;
 						return game;
 					}
 					else if (y > 400 && y < 480)	//自定义
 					{
 
+
+						game.gamemode = 4;
+						return game;
 					}
 				}
 			}
