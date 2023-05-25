@@ -4,6 +4,8 @@
 #define WIDTH 1280
 #define HEIGHT 720
 
+//#define _CRT_SECURE_NO_WARNINGS
+
 #define BACKGROUNDCOLOR 0xE7EFDE
 #define OPENCOLOE WHITE
 #define UNOPENCOLOR 0xFFDB9D
@@ -15,9 +17,10 @@
 
 struct judge
 {
-	int spacex = 0;
-	int spacey = 0;
-	int mine = 0;
+	int spacex;
+	int spacey;
+	int mine;
+	int gamemode;
 };
 typedef struct judge JUDGE;
 
@@ -53,7 +56,7 @@ void unopenspace(int k1, int k2);
 
 void printnum(int x, int y, int printnum);
 
-void fileoperation(int type);//对文件的操作
+int fileoperation(int type, int inputminute, int inputsecond, int inputgamemode);//对文件的操作
 #define READ 1
 #define WRITE 2
 
