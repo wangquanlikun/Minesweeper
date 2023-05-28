@@ -111,17 +111,12 @@ JUDGE setting(int flag)
 					}
 					else if (y > 400 && y < 480)	//自定义
 					{
-
-
+						game = Textbox();
 						game.gamemode = 4;
 						return game;
 					}
 				}
 			}
 		}
-	}
-	if (flag == 2)
-	{
-		
 	}
 }
