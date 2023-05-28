@@ -21,11 +21,20 @@ struct judge
 	int spacey;
 	int mine;
 	int gamemode;
+	wchar_t line[10] = { 0 };
+	wchar_t row[10] = { 0 };
+	wchar_t minetext[10] = { 0 };
 };
 typedef struct judge JUDGE;
 
 int opening();
 JUDGE setting(int flag);
+JUDGE Textbox();//自定义文本框函数
+
+void Creat(int x1, int y1, int x2, int y2, wchar_t* text);//创建自定义窗口
+int transport(wchar_t* ch);//将字符串转换成数字
+wchar_t* onMessage(int x1, int y1, int x2, int y2, wchar_t* text);//文本框的输入和删除
+
 
 int inputnum();
 
