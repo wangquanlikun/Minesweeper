@@ -64,6 +64,8 @@ int main()
 
 	std::thread timecutdown(printusetime);
 
+	setbkcolor(BACKGROUNDCOLOR);
+
 	gamedraw();//绘制游戏区域。开始点击操作游戏的进程
 
 	timecontinue = false;
