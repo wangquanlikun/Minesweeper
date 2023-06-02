@@ -38,7 +38,7 @@ wchar_t* onMessage(int x1, int y1, int x2, int y2, wchar_t* text);//文本框的
 
 int inputnum();
 
-void creatspace(int k1,int k2);//k1,k2是第一次点击的位置。不能有雷
+void creatspace(int k1, int k2);//k1,k2是第一次点击的位置。不能有雷
 void gamedraw();
 
 void remainmine(int remain);
@@ -64,7 +64,7 @@ void markquestion(int k1, int k2);
 void unopenspace(int k1, int k2);
 
 void printnum(int x, int y, int printnum);
-
+void reset();
 int fileoperation(int type, int inputminute, int inputsecond, int inputgamemode);//对文件的操作
 #define READ 1
 #define WRITE 2
