@@ -102,6 +102,7 @@ wchar_t* onMessage(int x1, int y1, int x2, int y2, wchar_t* text)
 
 JUDGE Textbox()
 {
+	setlinestyle(PS_SOLID | PS_ENDCAP_FLAT, 1);
 	JUDGE a;
 	JUDGE b;
 	wchar_t* line = a.line;
