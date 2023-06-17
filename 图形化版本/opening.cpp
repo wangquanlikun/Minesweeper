@@ -14,18 +14,20 @@ int opening()
 {
 	setlinecolor(BLACK);
 	settextcolor(BLACK);
-	settextstyle(60, 0, L"微软雅黑");
+	settextstyle(60, 75, L"Ark Pixel 12px zh_cn");
+	outtextxy(435, 110, L"MINESWEEPER");
 	//开始游戏
 	//设置参数
 	//查看记录
 	//	退出
-	for (int i = 1; i <= 3; i++)
+	for (int i = 2; i <= 4; i++)
 	{
-		rectangle(510, 100 * i, 770, 100 * i + 80);
+		roundrect(510, 100 * i, 770, 100 * i + 80, 20, 20);
 	}
-	outtextxy(550, 110, L"开始游戏");
-	outtextxy(550, 210, L"查看记录");
-	outtextxy(572, 310, L"  退出  ");
+	settextstyle(60, 45, L"站酷酷黑");
+	outtextxy(550, 210, L"开始游戏");
+	outtextxy(550, 310, L"查看记录");
+	outtextxy(550, 410, L"  退出  ");
 	ExMessage msg;
 	while (1)
 	{
@@ -36,15 +38,15 @@ int opening()
 			int y = msg.y;
 			if (x >= 510 && x <= 770)
 			{
-				if (y > 100 && y < 180)	//开始游戏
+				if (y > 200 && y < 280)	//开始游戏
 				{
 					return 1;
 				}
-				else if (y > 200 && y < 280)	//查看记录
+				else if (y > 300 && y < 380)	//查看记录
 				{
 					return 2;
 				}
-				else if (y > 300 && y < 380)	//退出游戏
+				else if (y > 400 && y < 480)	//退出游戏
 				{					
 					return 3;
 				}
@@ -62,19 +64,19 @@ JUDGE setting(int flag)
 	{
 		setlinecolor(BLACK);
 		settextcolor(BLACK);
-		settextstyle(60, 0, L"微软雅黑");
+		settextstyle(60, 45, L"站酷酷黑");
 		//初级
 		//中级
 		//高级
 		//自定义
 		for (int i = 1; i <= 4; i++)
 		{
-			rectangle(510, 100 * i, 770, 100 * i + 80);
+			roundrect(510, 100 * i, 770, 100 * i + 80, 20, 20);
 		}
 		outtextxy(600, 110, L"初级");
 		outtextxy(600, 210, L"中级");
 		outtextxy(600, 310, L"高级");
-		outtextxy(572, 410, L"自定义");
+		outtextxy(575, 410, L"自定义");
 		ExMessage msg;
 		while (1)
 		{
