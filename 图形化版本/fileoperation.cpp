@@ -43,8 +43,21 @@ int fileoperation(int type, int inputminute, int inputsecond, int inputgamemode)
 					notreadanynum = false;
 
 					printnum(x, y, minutes);
-					outtextxy(x + 25, y, L":");
-					printnum(x + 50, y, seconds);
+					if (minutes < 10)
+					{
+						outtextxy(x + 25, y, L":");
+						printnum(x + 50, y, seconds);
+					}
+					else if (minutes < 100)
+					{
+						outtextxy(x + 40, y, L":");
+						printnum(x + 60, y, seconds);
+					}
+					else
+					{
+						outtextxy(x + 55, y, L":");
+						printnum(x + 70, y, seconds);
+					}
 
 					if (gamemode == EASY)
 						outtextxy(x + 200, y, L"简单模式");
