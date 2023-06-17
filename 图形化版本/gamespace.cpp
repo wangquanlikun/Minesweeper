@@ -18,11 +18,15 @@ char numspace[30 + 2][30 + 2] = { '\0' }; //直接记录个位置雷与数字
 char outputspace[30 + 2][30 + 2] = { '\0' };//记录输出的游戏数据
 bool timecontinue = true;
 bool replay = false;
+bool again1 = false;
+bool isthefirstclick = true;
 
 int minutes = 0;
 int seconds = 0;
 int gamemode;
-
+int again_num = 0;
+int replay_num = 0;
+int copy = 0;
 int main()
 {
 	initgraph(WIDTH, HEIGHT);
@@ -48,6 +52,7 @@ int main()
 		gamespacey = game.spacey;
 		minenum = game.mine;
 		gamemode = game.gamemode;
+		copy = game.mine;
 	}
 	else if (flag == 2)//点击查看记录
 	{
@@ -60,8 +65,8 @@ int main()
 		closegraph();
 		return 0;
 	}
-	
 
+	again:
 	std::thread timecutdown(printusetime);
 
 	setbkcolor(BACKGROUNDCOLOR);
@@ -75,9 +80,16 @@ int main()
 	{
 		replay = false;
 		timecontinue = true;
+		isthefirstclick = true;
 		goto restart;
 	}
-
+	if (again1)
+	{
+		again1 = false;
+		timecontinue = true;
+		reset();
+		goto again;
+	}
 	closegraph();
 	return 0;
 }
@@ -87,7 +99,6 @@ void gamedraw()
 	setlinecolor(0x332300);
 	setlinestyle(PS_SOLID | PS_ENDCAP_FLAT, 2);
 	cleardevice();
-
 	float top = 50, bottom = HEIGHT - top;
 	float each = (bottom - top) / gamespacey;
 	float square = each * 5 / 6;
@@ -109,20 +120,23 @@ void gamedraw()
 
 	rectangle(left + i1 * each + 50, top, left + i1 * each + 150, top + 50);
 	rectangle(left + i1 * each + 50, top + 75, left + i1 * each + 150, top + 125);
+	rectangle(left + i1 * each + 50, top + 150, left + i1 * each + 150, top + 200);
 	TCHAR exit[] = _T("退出游戏");
 	TCHAR restart[] = _T("重新开始");
+	TCHAR again[] = _T("再玩一次");
 	settextstyle(30, 0, _T("微软雅黑"));
 	settextcolor(BLACK);
 	outtextxy(left + i1 * each + 56, top + 10, exit);
 	outtextxy(left + i1 * each + 56, top + 10 + 75, restart);
-
+	outtextxy(left + i1 * each + 56, top + 10 + 150, again);
+	minenum = copy;
 	remainmine(minenum);
 
 	ExMessage mouseclick;
 
-	bool isthefirstclick = true;
+
 	int operation_return;
-	int status=GAMEINPROGRESS;
+	int status = GAMEINPROGRESS;
 
 	while (true)
 	{
@@ -131,6 +145,11 @@ void gamedraw()
 
 		if (mouseclick.x >= left && mouseclick.x <= right && mouseclick.y >= top && mouseclick.y <= bottom - interval)
 		{
+			if (replay_num == 1)
+			{
+				again_num = 0;
+				replay_num = 0;
+			}
 			if (mouseclick.message == WM_LBUTTONDOWN)
 			{
 				int time = clock();
@@ -142,7 +161,7 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						if (isthefirstclick)
+						if (isthefirstclick == true && again_num == 0)
 						{
 							creatspace(k1, k2);
 							isthefirstclick = false;
@@ -170,7 +189,7 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						if (isthefirstclick)
+						if (isthefirstclick == true && again_num == 0)
 						{
 							creatspace(k1, k2);
 							isthefirstclick = false;
@@ -198,12 +217,12 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						if (isthefirstclick)
+						if (isthefirstclick == true && again_num == 0)
 						{
 							creatspace(k1, k2);
 							isthefirstclick = false;
 						}
-						
+
 						operation_return = operation(LEFTCLICK, k1 + 1, k2 + 1);
 						if (operation_return >= -1)
 						{
@@ -235,7 +254,7 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						if (isthefirstclick)
+						if (isthefirstclick == true && again_num == 0)
 						{
 							creatspace(k1, k2);
 							isthefirstclick = false;
@@ -263,7 +282,7 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						if (isthefirstclick)
+						if (isthefirstclick == true && again_num == 0)
 						{
 							creatspace(k1, k2);
 							isthefirstclick = false;
@@ -291,7 +310,7 @@ void gamedraw()
 					{
 						k1 = (mouseclick.x - left) / each;
 						k2 = (mouseclick.y - top) / each;
-						if (isthefirstclick)
+						if (isthefirstclick == true && again_num == 0)
 						{
 							creatspace(k1, k2);
 							isthefirstclick = false;
@@ -323,7 +342,15 @@ void gamedraw()
 			break;
 		else if (((mouseclick.x >= left + i1 * each + 50 && mouseclick.x <= left + i1 * each + 150) && (mouseclick.y >= top + 75 && mouseclick.y <= top + 125)) && mouseclick.lbutton == 1)
 		{
+
 			replay = true;
+			replay_num = 1;
+			break;
+		}
+		else if (((mouseclick.x >= left + i1 * each + 50 && mouseclick.x <= left + i1 * each + 150) && (mouseclick.y >= top + 150 && mouseclick.y <= top + 200)) && mouseclick.lbutton == 1 && isthefirstclick == false)
+		{
+			again1 = true;
+			again_num = 1;
 			break;
 		}
 	}
@@ -516,6 +543,40 @@ void creatspace(int k1, int k2)
 	return;
 }
 
+
+void reset()
+{
+	int aroundmine;
+	int i1, i2;
+	int p1, p2;
+	for (i1 = 1; i1 <= gamespacex; i1++)
+	{
+		for (i2 = 1; i2 <= gamespacey; i2++)
+		{
+			if (space[i1][i2] == '*')
+			{
+				outputspace[i1][i2] = '.';
+				numspace[i1][i2] = '*';
+			}
+			else if (space[i1][i2] == '.')
+			{
+				aroundmine = 0;
+				for (p1 = -1; p1 <= 1; p1++)
+				{
+					for (p2 = -1; p2 <= 1; p2++)
+					{
+						if ((p1 != 0 || p2 != 0) && space[i1 + p1][i2 + p2] == '*')
+							aroundmine += 1;
+					}
+				}
+				numspace[i1][i2] = aroundmine + '0';
+				outputspace[i1][i2] = '.';
+			}
+		}
+	}
+	return;
+}
+
 int operation(int operatype, int xspace, int yspace)
 {
 	if (operatype == 1)//左键点击
@@ -640,7 +701,7 @@ void gamestatusprint(int status)
 	settextstyle(30, 0, _T("微软雅黑"));
 	settextcolor(BLACK);
 	clearrectangle(20, 670, 600, 720);
-	if(status==GAMEINPROGRESS)
+	if (status == GAMEINPROGRESS)
 		outtextxy(30, 680, gameinprogress);
 	else if (status == HITMINE)
 	{
@@ -724,20 +785,20 @@ void printusetime()
 	minutes = 0;
 	seconds = 0;
 
-	while (timecontinue) 
+	while (timecontinue)
 	{
 		clearrectangle(1050, 670, 1280, 720);
-		settextstyle(35, 0, _T("Consolas"));
+		settextstyle(35, 0, _T("Ark Pixel 12px zh_cn"));
 		settextcolor(BLACK);
 		printnum(1100, 680, minutes);
 		TCHAR a[] = _T(":");
-		outtextxy(1125, 680, a);
+		outtextxy(1125, 678, a);
 		printnum(1150, 680, seconds);
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		seconds++;
 		if (seconds >= 60) {
-			minutes ++;
+			minutes++;
 			seconds = 0;
 		}
 	}
